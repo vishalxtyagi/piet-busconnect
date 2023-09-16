@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:busconnect/ui/screens/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../guest_screen.dart';
+
 class GuestRegistrationScreen extends StatefulWidget {
   const GuestRegistrationScreen({Key? key}) : super(key: key);
 
@@ -50,9 +52,9 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
     }
 
     // Navigate to home screen after successful submission
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
+      MaterialPageRoute(builder: (context) => GuestScreen()),
     );
   }
 
@@ -133,7 +135,7 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
                 height: 50,
                 width: 250,
                 margin: EdgeInsets.only(top: 50),
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       _qrBarCodeScannerDialogPlugin.getScannedQrBarCode(

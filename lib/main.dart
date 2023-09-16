@@ -1,6 +1,4 @@
 import 'package:busconnect/ui/app_router.dart';
-import 'package:busconnect/ui/screens/features/notification_screen.dart';
-import 'package:busconnect/ui/screens/features/schedule_screen.dart';
 import 'package:busconnect/ui/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
@@ -28,7 +26,7 @@ class BusConnect extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightGreen),
         useMaterial3: true,
       ),
-      home: const SplashScreen(),
+      home: SplashScreen(),
       routes: AppRouter.routes,
     );
   }

@@ -1,3 +1,4 @@
+import 'package:busconnect/ui/screens/guest_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:busconnect/ui/screens/home_screen.dart';
 import 'package:busconnect/ui/screens/login_screen.dart';
@@ -9,12 +10,20 @@ class SplashScreen extends StatelessWidget {
   Future<void> _checkIfRegistered(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool isRegistered = prefs.getBool('isRegistered') ?? false;
+    bool isGuest = prefs.getBool('isGuest') ?? false;
 
     if (isRegistered) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      if (isGuest) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => GuestScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      }
     } else {
       Navigator.pushReplacement(
         context,

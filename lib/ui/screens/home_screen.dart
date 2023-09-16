@@ -19,8 +19,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int currentPageIndex = 0;
 
   static List<Widget> pages = <Widget>[
-    ScheduleScreen(),
     AttendanceScreen(),
+    ScheduleScreen(),
     NotificationScreen(),
     ProfileScreen()
   ];
@@ -57,11 +57,11 @@ class _HomeScreenState extends State<HomeScreen> {
         destinations: const <Widget>[
           NavigationDestination(
             icon: Icon(Icons.directions_bus),
-            label: 'Track Bus',
+            label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.calendar_today),
-            label: 'Attendance',
+            icon: Icon(Icons.schedule),
+            label: 'Schedule',
           ),
           NavigationDestination(
             icon: Icon(Icons.notifications),

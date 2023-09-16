@@ -148,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     height: 50,
                     width: 250,
-                    child: ElevatedButton(
+                    child: FilledButton(
                       onPressed: () async {
                         await _signInWithGoogle();
                       },
@@ -162,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     margin: EdgeInsets.zero,
                     child: OutlinedButton(
                       onPressed: () {
-                        Navigator.pushReplacement(
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => GuestRegistrationScreen(),

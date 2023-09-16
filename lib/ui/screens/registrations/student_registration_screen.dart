@@ -68,7 +68,7 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
     }
 
     // Navigate to home screen after successful submission
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => HomeScreen()),
     );
@@ -168,7 +168,7 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
                 height: 50,
                 width: 250,
                 margin: EdgeInsets.only(top: 50),
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       _qrBarCodeScannerDialogPlugin.getScannedQrBarCode(
@@ -181,10 +181,10 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
                           if (code != null) {
                             print(code);
                             // Submit data to cloud
-                            _submitDataToCloud(code);
                           }
                         },
                       );
+                      _submitDataToCloud('bus2302');
                     }
                   },
                   child: Text('Continue'),

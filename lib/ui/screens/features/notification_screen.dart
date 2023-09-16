@@ -1,38 +1,69 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class NotificationScreen extends StatefulWidget {
-  const NotificationScreen({super.key});
-
-  final String title = 'Notifications';
-
   @override
   State<NotificationScreen> createState() => _NotificationScreenState();
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  String? _fcmToken;
 
-  final List<Map<String, dynamic>> _notifications = [
-    {
-      'title': 'Hey, Bus no. 2 is arriving in 5 minutes',
-      'time': '5 minutes ago',
-      'read': false,
-    },
-    {
-      'title': 'Bus no. 1 has been cancelled',
-      'time': '1 hour ago',
-      'read': true,
-    },
-  ];
 
-  void _markAsRead(int index) {
-    setState(() {
-      _notifications[index]['read'] = true;
+  @override
+  void initState() {
+    super.initState();
+
+    _firebaseMessaging.requestPermission();
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message)
+    {
+      // Handle notification when app is in foreground
+      // This callback triggers when the app is in foreground.
+      // You can use this to display a heads up notification or update the UI.
+      print('Got a message whilst in the foreground!');
+      print('Message data: ${message.data}');
+
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
+      }
+
+      // Add notification to Firestore
+      FirebaseFirestore.instance.collection('notifications').add({
+        'title': message.notification!.title,
+        'body': message.notification!.body,
+        'time': DateTime.now().toString(),
+        'read': false
+      });
     });
-  }
 
-  void _clearAllNotofications() {
-    setState(() {
-      _notifications.clear();
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      // Handle notification when app is in background
+      // This callback triggers when the app is in background.
+      // You can use this to display a heads up notification or update the UI.
+      print('A new onMessageOpenedApp event was published!');
+      print('Message data: ${message.data}');
+
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
+      }
+
+      // Add notification to Firestore
+      FirebaseFirestore.instance.collection('notifications').add({
+        'title': message.notification!.title,
+        'body': message.notification!.body,
+        'time': DateTime.now().toString(),
+        'read': true
+      });
+    });
+
+    _firebaseMessaging.getToken().then((token) {
+      setState(() {
+        _fcmToken = token;
+        print('FCM Token: $_fcmToken');
+      });
     });
   }
 
@@ -40,27 +71,35 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: const Text('Notifications'),
       ),
-      body: Container(
-        padding: const EdgeInsets.all(20),
-        child: ListView.builder(itemBuilder: (context, index) {
-          return Card(
-            child: ListTile(
-              title: Text(_notifications[index]['title']),
-              subtitle: Text(_notifications[index]['time']),
-              trailing: _notifications[index]['read'] ? null : const Icon(Icons.circle, color: Colors.red),
-              onTap: () => _markAsRead(index),
-            ),
-          );
-        }, itemCount: _notifications.length,),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _clearAllNotofications,
-        tooltip: 'Clear All',
-        child: const Icon(Icons.clear_all),
-      ),
+      body: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('notifications').snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return const Center(
+                  child: Text('No notifications available.'),
+                );
+              }
+
+              return ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  DocumentSnapshot doc = snapshot.data!.docs[index];
+                  return ListTile(
+                    tileColor: doc['read'] ? Colors.grey[300] : Colors.green[100],
+                    title: Text(doc['title']),
+                    subtitle: Text(doc['body']),
+                  );
+                },
+              );
+            },
+          ),
     );
   }
 }

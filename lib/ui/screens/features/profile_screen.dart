@@ -195,9 +195,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.only(top: 30),
                 child: SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: _updateUserData,
                     child: Text('Update Profile'),
+                  ),
+                ),
+              ),
+              // logout button
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () async {
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      await prefs.clear(); // Clear all data from SharedPreferences
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/login',
+                        (route) => false,
+                      ); // Navigate to LoginScreen and remove all previous routes
+                    },
+                    child: Text('Logout'),
                   ),
                 ),
               ),

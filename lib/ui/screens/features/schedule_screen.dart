@@ -10,7 +10,28 @@ class ScheduleScreen extends StatefulWidget {
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
-  List<dynamic>? _routes; // List to store fetched routes
+  Map<String, dynamic>? _routes = {
+    'bus_code': '1234',
+    'route': [
+      {
+        'route_name': 'Route 1',
+        'stops': [
+          {'stop_name': 'Stop 1', 'stop_time': '10:00'},
+          {'stop_name': 'Stop 2', 'stop_time': '10:10'},
+          {'stop_name': 'Stop 3', 'stop_time': '10:20'},
+        ]
+      },
+      {
+        'route_name': 'Route 2',
+        'stops': [
+          {'stop_name': 'Stop 5', 'stop_time': '10:00'},
+          {'stop_name': 'Stop 8', 'stop_time': '10:10'},
+          {'stop_name': 'Stop 3', 'stop_time': '10:20'},
+        ]
+      },
+    ],
+  };
+
   int _selectedRouteIndex = 0;
 
   @override
@@ -24,20 +45,25 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     });
   }
 
-  Future<List<dynamic>> fetchRoutes() async {
-
+  Future<Map<String, dynamic>> fetchRoutes() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? busCode = prefs.getString('busCode');
+    String busCode = prefs.getString('busCode') ?? '';
 
-    DocumentSnapshot doc = await FirebaseFirestore.instance
-        .collection('routes')
-        .doc(busCode)
-        .get();
+    // Get a reference to the Firestore instance
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    // get keys from doc.data()
-    
+    // Get the document
+    DocumentSnapshot documentSnapshot =
+        await firestore.collection('routes').doc(busCode).get();
 
-    return doc['routes'];
+    // If the document exists
+    if (documentSnapshot.exists) {
+      // Return the document data
+      return documentSnapshot.data() as Map<String, dynamic>;
+    } else {
+      // Return an empty map
+      return {};
+    }
   }
 
   @override
@@ -78,21 +104,23 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   border: OutlineInputBorder(),
                   labelText: 'Select Route',
                 ),
-                value: _selectedRouteIndex,
-                onChanged: (index) {
+value: _routes!['route'][0]['route_name'],
+                items: [
+                  for (var route in _routes!['route'])
+                    DropdownMenuItem(
+                      value: route['route_name'],
+                      child: Text(route['route_name']),
+                    ),
+                ],
+                onChanged: (value) {
                   setState(() {
-                    _selectedRouteIndex = index!;
+                    _routes!['route'].forEach((route) {
+                      if (route['route_name'] == value) {
+                        _selectedRouteIndex = _routes!['route'].indexOf(route);
+                      }
+                    });
                   });
                 },
-                items: List<DropdownMenuItem<int>>.generate(
-                  _routes!.length,
-                      (index) {
-                    return DropdownMenuItem(
-                      value: index,
-                      child: Text('Route ${index + 1}'),
-                    );
-                  },
-                ),
               ),
             ),
             // schedule
@@ -101,16 +129,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               child: ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: _routes![_selectedRouteIndex].length,
+                itemCount: _routes!['route'][_selectedRouteIndex]['stops'].length,
                 itemBuilder: (context, index) {
-                  var stop = _routes![_selectedRouteIndex][index];
-                  return Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: ListTile(
-                        title: Text(stop['stop_name']),
-                        trailing: Text(stop['stop_time']),
-                      ),
+                  return ListTile(
+                    leading: Icon(Icons.location_on),
+                    title: Text(
+                      _routes!['route'][_selectedRouteIndex]['stops'][index]
+                          ['stop_name'],
+                    ),
+                    subtitle: Text(
+                      _routes!['route'][_selectedRouteIndex]['stops'][index]
+                          ['stop_time'],
                     ),
                   );
                 },
